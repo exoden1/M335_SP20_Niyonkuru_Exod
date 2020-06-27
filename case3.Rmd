@@ -1,0 +1,79 @@
+---
+title: "Case Study 3"
+author: "Exode"
+date: "5/16/2020"
+output: 
+  html_document:
+    keep_md: true
+---
+```{r, include = FALSE}
+library(car)
+library(mosaic)
+library(pander)
+library(scatterplot3d)
+library(plotly)
+library(ggplot2)
+library(tidyverse)
+library(DT)
+library(broom)
+library(nycflights13)
+```
+
+## Background
+
+ An article from FiveThirtyEighty shows that there is more than 33,000 people that are fatally shot in the USA. The article shows that alomst two-thirds of gun deaths are related to swicide.About 85 percent of suicide victims are male aged 45 or older. More than half of homicide victims are blacks men aged between 15 and 34.
+```{r}
+data <- read.csv("C:\\Users\\exoni\\OneDrive\\myrepo\\full_data.csv")
+```
+
+
+```{r include=FALSE}
+datatable(data)
+```
+
+```{r}
+dat <- subset(data,sex=="M"&age!="NA"&age>=15&intent!="NA")
+```
+```{r}
+da <- subset(data,sex=="F")
+```
+
+```{r include=FALSE}
+datt <-dat %>% 
+  mutate(group= case_when(age >=15 & age <=34 ~ "youngmen",age>=32 ~ "Adultmen"))
+```
+
+The plot below shows that young black men aged between 15 and 34 are more likely to be victims of homicide. It also shows that white men aged 35 or older are more likely to be victims of suicides.
+```{r}
+la <- datt %>% group_by(month,intent,year,race,hispanic,group,sex) %>% summarise(sum=sum(month),n(),na.rm=TRUE)
+
+
+
+k<-la %>% ggplot(aes(sum,as.factor(month)))+geom_point(aes(color=intent))+facet_wrap(~race+group,nrow=5)+labs(x="sum of gun of gun deaths",y="months",title="Gun Deaths Among Men between 2012 and 2014 in the USA")
+ggplotly(k,tooltip = c("sum","intent","year"))
+ggsave("men.png")
+```
+
+```{r}
+da <- subset(data,sex=="F")
+```
+
+```{r include=FALSE}
+datt <-dat %>% 
+  mutate(group= case_when(age >=15 ~"women"))
+```
+
+The plot below shows that black women aged 15 and older are more likely to be victims of homicides. It also shows that white women aged 15 or older are more likely to be victims of suicide.
+```{r}
+la <- datt %>% group_by(month,intent,year,race,hispanic,group,sex) %>% summarise(sum=sum(month),n(),na.rm=TRUE)
+
+
+
+k<-la %>% ggplot(aes(sum,as.factor(month)))+geom_point(aes(color=intent))+facet_wrap(~race+group,nrow=5)+labs(x="Sum of gun deaths",y="months",title="Gun Deaths Among Women between 2012 and 2014 in the USA")+theme_bw()
+ggplotly(k,tooltip = c("sum","intent","year"))
+ggsave("women.png")
+```
+
+## Conclusion
+
+The client should make commercials that target young black men, white adult men, black women, and white women. It seems like the number are higher towards the end of the year. So, it would be important to make messages during the months of October, November, and December.

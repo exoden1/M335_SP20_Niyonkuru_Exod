@@ -1,0 +1,59 @@
+---
+title: "Task 19"
+subtitle: "My Stocks Better than Yours"
+date: 6/23/2020
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r include=FALSE}
+library(tidyquant)
+library(quantmod)
+library(lubridate)
+library(tidyverse)
+library(plotly)
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(foreign)
+library(haven)
+```
+
+## Background
+
+**Three stocks for my friend : Delta Airlines (DAL),Netflix(NFLX),Snapchat(SNAP). My three stocks: Twitter(TWTR),Walmart(WMT),Zoom Communications (ZM)**
+
+## Perfomane Analysis
+
+```{r}
+w<-tq_get("ZM",get= "stock.prices",from="2019-10-01",to="2020-06-20")
+y<-tq_get("NFLX",get="stock.prices",from="2019-10-01",to="2020-06-20")
+s<-tq_get("SNAP",get="stock.prices",from="2019-10-01",to="2020-06-20")
+tw<-tq_get("TWTR",get="stock.prices",from="2019-10-01",to="2020-06-20")
+wm<-tq_get("WMT",get="stock.prices",from="2019-10-01",to="2020-06-20")
+d<-tq_get("DAL",get="stock.prices",from="2019-10-01",to="2020-06-20")
+t <- bind_rows(w,y,s,tw,wm,d)
+t
+k<-t %>% group_by(symbol) %>% tq_transmute(adjusted,mutate_fun=dailyReturn,col_rename="Ra")
+k$Ra<- k$Ra*1000
+k1 <- mutate(k,Day=wday(date,label=TRUE),date=date(date),Month=month(date,label=TRUE))
+k1
+```
+
+```{r,fig.width=12}
+p<-ggplot(k1,aes(Day,Ra,col=symbol))+theme_tq()+scale_color_tq()+geom_boxplot(aes(Day))+facet_wrap(~symbol)+labs(x="Day",y="Daily Returns",color="STOCKS",title="Stocks Performance on Daily Basis (October 2019- June 2020)")
+ggplotly(p,tooltip=c("Day","Ra","symbol"))
+```
+```{r}
+k2 <- k1 %>% group_by(symbol) %>% summarise(sum=sum(Ra))
+o<-ggplot(k2,aes(symbol,sum,col=symbol,size=sum))+geom_point()+ggtitle("Investment Growth per Stock")
+ggplotly(o, tooltip="sum")
+
+```
+
+## Summary
+
+**My friend picked three stocks: Delta Airlines(DAL),NetFlix(NFLX), and SnapChat(SNAP).
+I picked three stocks : Twitter(TWTR),Walmart(WM),and Zoom Communications (ZM)
+Over the past 8 months, Zoom communications has had the greatest returns. Snapchat and Netflix did better than Walmart. Twitter and Delta Airlines were the worst stocks to invest in over the past 8 months. The $1000 didn't generate any positive returns. Investing in Delta Airlines and Twitter resulted in a huge loss.**

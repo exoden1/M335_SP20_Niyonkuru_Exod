@@ -1,0 +1,67 @@
+---
+title: "CaseStudy6"
+author: "Exode"
+date: "6/2/2020"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r include=FALSE}
+library(Lahman)
+library(blscrapeR)
+library(haven)
+library(foreign)
+library(car)
+library(mosaic)
+library(pander)
+library(scatterplot3d)
+library(plotly)
+library(ggplot2)
+library(tidyverse)
+library(DT)
+library(broom)
+library(nycflights13)
+library(reshape2)
+library(tidyr)
+library(downloader)
+library(haven)
+library(foreign)
+```
+
+
+```{r include=FALSE}
+Lahman::Salaries
+```
+
+
+
+
+
+
+
+
+```{r include=FALSE}
+schoolInfo <- Schools %>% select(-country)
+schoolCount <- CollegePlaying %>%
+group_by(schoolID,playerID,yearID) %>%
+summarise(players = length(schoolID)) %>%
+left_join(schoolInfo, by = "schoolID") %>% 
+arrange(desc(players))
+salaryschool <- schoolCount %>% left_join(Lahman::Salaries, by="playerID")
+perform <- salaryschool %>% left_join(Lahman::Batting, by= "playerID")
+
+```
+```{r include=FALSE}
+perform$salary= perform$salary*1.2451/1000
+sc <- subset(perform, state=="UT")
+summary(sc)
+```
+
+```{r}
+ggplot(sc, aes(x=lgID.x,y=salary, color=schoolID))+geom_boxplot(aes(group=schoolID))+labs(x="LeagueID",y="Salary in 2017 U.S.Dollars",title="Comparison Between Baseball Professionals \n Who Attended BYU and those Who Attended Other Colleges in Utah",size="Salary(1K)")+facet_wrap(~schoolID)
+```
+
+
+
+
