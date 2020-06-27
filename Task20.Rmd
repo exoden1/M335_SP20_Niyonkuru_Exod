@@ -1,0 +1,53 @@
+---
+title: "Task 20 , The US Grocer"
+subtitle: "Stock Perfomance, Kroger(KR)"
+date: '`r Sys.Date()`'
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(dygraphs)
+library(plotly)
+library(tidyverse)
+library(ggplot2)
+library(readr)
+library(quantmod)
+library(PerformanceAnalytics)
+library(tidyquant)
+
+```
+
+## Kroger Performance from 2015 to 2020
+
+```{r, fig.height=7,fig.width=8}
+getSymbols("KR",auto.assign = getOption('getSymbols.auto.assign',TRUE))
+dateWindow <- c("2015-06-26", "2020-06-26")
+dygraph(OHLC(KR), main = "Kroger (KR) Performance (June 2015- June 2020)",xlab="Period", ylab="Stock Prices",group = "stock") %>%
+  dyRangeSelector(dateWindow = dateWindow) %>% dyShading(from = "2018-07-1", to = "2018-10-1", color = "#FFE6E6") %>%
+  dyShading(from = "2020-1-1", to = "2020-4-1", color = "#CCEBD6") %>% dyShading(from="2019-06-01", to= "2019-08-01",color="#CCEBD6") %>% dyEvent("2020-03-20",
+               "Covid19, People stockpiling Essentials", labelLoc = "bottom") %>% dyEvent("2019-07-24",
+               "Competitors cut Prices, Kroger stock price decreased", labelLoc = "top")
+ 
+```
+
+## Performance by June 2020 if $10,000 Was Invested on April 5th, 2018
+
+```{r}
+getSymbols("KR")
+dateWindow <- c("2018-04-05", "2020-06-26")
+dygraph(OHLC(KR), main = "Performance by June 2020 with $10,000 Invested on April 5th, 2018", xlab="Periods",ylab="Price", group = "stock") %>%
+  dyRebase(value = 10000) %>%
+  dyRangeSelector(dateWindow = dateWindow)%>%
+  dyShading(from = "2018-07-1", to = "2018-10-1", color = "#FFE6E6") %>%
+  dyShading(from = "2020-1-1", to = "2020-4-1", color = "#CCEBD6") %>% dyShading(from="2019-06-01", to= "2019-08-01",color="#CCEBD6")
+```
+
+## Summary
+
+The stock prices for Kroger have been unstable over the last five years. In 2019, when competitors like Walmart cut prices, Kroger struggled to keep most its customers. That explains why between the end of June and the end of July in 2019, Kroger had the lowest daily stock prices. The highest prices were recorded in the middle of March 2020. That may have been influenced by the fact that most people were stockpiling essentials due to the Coronavirus pandemic. I decided to use a line graph because it communicates better how the price has been changing over time or how the stock has been performing.
