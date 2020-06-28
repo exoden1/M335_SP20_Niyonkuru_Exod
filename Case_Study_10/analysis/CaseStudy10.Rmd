@@ -1,0 +1,53 @@
+---
+title: "Case 10"
+author: "Exode"
+date: "6/27/2020"
+html_document:
+    keep_md: true
+---
+
+
+
+
+```{r include=FALSE}
+library(quantmod)
+library(tidyquant)
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+library(readr)
+library(dygraphs)
+library(timetk)
+```
+
+
+
+## Stocks Performance Using library(dygraphs)
+
+```{r, fig}
+getSymbols(c("CXW", "F", "GM", "JCP", "KR", "WDC", "NKE","T", "WDAY", "WFC", "WMT"))
+tickers_today <- c("CXW", "F", "GM", "JCP", "KR", "WDC", "NKE","T", "WDAY", "WFC", "WMT")
+getSymbols(tickers_today)
+K <- do.call(merge, lapply(tickers_today, function(x) Cl(get(x))))
+dateWindow <- c("2015-06-26", "2020-06-06")
+dygraph(K, main = "Stock Performances (2015-2020)",xlab="Periods",ylab="Stock Prices") %>%
+  dyRangeSelector(dateWindow = dateWindow) %>% dyShading(from = "2019-1-1", to = "2020-3-12", color = "#CCEBD6") %>% dyOptions(stackedGraph = TRUE) %>%
+  dyRangeSelector(height = 20) %>% dyLegend(width = 400)
+```
+
+## Stocks Performance Using library(ggplot2)
+
+```{r, fig.width=17,fig.height=10}
+t<-tq_get(c("CXW", "F", "GM", "JCP", "KR", "WDC", "NKE","T", "WDAY", "WFC", "WMT"),get="stock.prices",from="2015-06-26", to="2020-06-26")
+t$volume<-t$volume/100000
+
+   p<-ggplot(t) +
+    geom_col(aes(date,volume,group=close,col=symbol),size=2)+theme_bw()+geom_line(aes(date,close))+
+    labs(title = "Volume Sold and Stock Prices (2015-2020)",y="Volume (in millions",x="Periods")+facet_wrap(~symbol)
+   ggplotly(p, tooltip=c("close","date","volume"))
+```
+
+
+## Summary
+
+In analyzing the Volume Sold and Stock Prices graphs, the conclusion of how investors would choose their strategies is apparent. Historical data shows frequently sold stocks are better to invest in due to potential good returns.Using a bar graph combined with line graph to visualize the amount of stocks sold compared to closing stock prices for the day gives a clear idea of expected return amount. The five years of information that was used gives an idea of how to predict these trends. It shows that in most cases, there is a positive relationships between the stock price and the volume of shares traded.
