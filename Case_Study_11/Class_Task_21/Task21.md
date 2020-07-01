@@ -69,7 +69,7 @@ t5<-st_as_sf(t4)
 ```
 
 ```r
-m <- ggplot()+geom_sf(data=states_2,fill=NA,size=5)+geom_sf(data=t3,aes(color=city),show.legend = FALSE)+geom_sf(data=st,fill=NA)+geom_point(data=t3,aes(size=population,geometry=geometry),stat="sf_coordinates")+theme_bw(base_size = 120)+scale_size_continuous(range = c(30, 50))+labs(size="Population (1000)")+theme(axis.title.x = element_blank(),
+m <- ggplot()+geom_sf(data=states_2,fill=NA,size=5)+geom_sf(data=t3,aes(color=city),show.legend = FALSE)+geom_sf(data=st,fill=NA)+geom_point(data=t3,aes(size=population,geometry=geometry),stat="sf_coordinates")+theme_bw(base_size = 120)+scale_size_continuous(range = c(30, 50))+labs(size="Population (1000)",title="U.S Map with the Three Biggest Cities in Each State")+theme(axis.title.x = element_blank(),
           axis.title.y = element_blank())+  geom_sf_label(data=t5,aes(label = city), size=22,color="blue",label.padding = unit(10, "mm"),fontface="bold")
 m
 ```
@@ -85,5 +85,13 @@ m
 ![](Task21_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
 ```r
-png("r21.png",width=600, height=600,res=1,units = "px")
+ggsave('~/saved_image.png', width = 40, height = 20, dpi = 200)
+```
+
+```
+## Warning in st_point_on_surface.sfc(sf::st_zm(x)): st_point_on_surface may not
+## give correct results for longitude/latitude data
+
+## Warning in st_point_on_surface.sfc(sf::st_zm(x)): st_point_on_surface may not
+## give correct results for longitude/latitude data
 ```
