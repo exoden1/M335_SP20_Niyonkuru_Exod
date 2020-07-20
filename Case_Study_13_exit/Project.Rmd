@@ -1,0 +1,208 @@
+---
+title: "Semester Project"
+author: "Exode"
+date: "7/16/2020"
+output: 
+  html_document:
+    keep_md: true
+    fig_caption: true
+    theme: cerulean
+
+---
+
+```{r include=FALSE}
+library(sf)
+library(ggplot2)
+library(haven)
+library(foreign)
+library(rgdal)
+library(raster)
+library(stringi)
+library(stringr)
+library(readr)
+library(ggrepel)
+library(USAboundaries)
+library(geofacet)
+library(gganimate)
+library(magick)
+library(plotly)
+library(USAboundaries)
+library(tidyverse)
+library(maps)
+library(pander)
+library(DT)
+library(dplyr)
+library(Lahman)
+library(tidyr)
+library(ggspatial)
+library(leaflet)
+library(sp)
+library(shiny)
+```
+
+# Question :  How Has the Growth of the African Economy Been Over the Past 50 Years?
+
+### A Look at the Gross Domestic Product(GDP), Real GDP (RGDP), and Real GDP per Capita, and GDP Per Capita
+
+## Background 
+
+The Gross Domestic Product (GDP) of an economy is a measure of total production. More precisely, it is the monetary value of all goods and services produced within a country or region in a specific time period (DataWorld.com)
+
+Real gross domestic product is a macroeconomic statistic that measures the value of the goods and services produced by an economy in a specific period, adjusted for inflation. Essentially, it measures a country's total economic output, adjusted for price changes. Governments use both nominal and real GDP as metrics for analyzing economic growth and purchasing power over time. As such, real GDP provides a better basis for judging long-term national economic performance than nominal GDP(Gross Domestic Product). (Investopedia.com). 
+
+## Objectives
+
+A look at how the African Economy compares to that of the other continents. Developing insights on what should be done to boost the growth of the African economy.
+
+## Graphs
+
+```{r}
+world <- read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-18-2020 (1).csv")
+growth_rate <- function(x)(x/lag(x)-1)*100 
+world$growth_rate <- growth_rate(world$Value) 
+w1 <- mutate(world,growth=growth_rate(Value),Value=Value/1000)
+k1<-ggplot(w1,aes(x=Year,y=Value))+theme_bw()+geom_line(aes(y=Value),color="blue")+labs(title="World GDP per Year (1970-2018)",x="Periods",y="GDP in Thousands of Billion US Dollars")
+ggplotly(k1,tooltip=c("Year","Value"))
+
+k<-ggplot(w1,aes(x=Year,y=growth))+geom_line(aes(y=growth),color="blue")+theme_bw(base_size=10)+labs(title="World GDP Growth  (1970-2018)",x="Periods",y="Growth in Percentages")
+ggplotly(k,tooltip=c("Year","growth"))
+
+```
+```{r}
+#Africa
+
+af <- read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020.csv")
+growth_rate <- function(x)(x/lag(x)-1)*100 
+af$growth_rate <- growth_rate(af$Value) 
+af1 <- mutate(af,growth=growth_rate(Value),Value=Value/1000)
+p1<-ggplot(af1,aes(x=Year,y=Value))+theme_bw()+geom_line(aes(y=Value),color="blue")+labs(title="Africa GDP per Year (1970-2018)",x="Periods",y="GDP in Thousands of Billions US Dollars ")
+ggplotly(p1,tooltip=c("Year","Value"))
+p<-ggplot(af1,aes(x=Year,y=growth))+geom_line(aes(y=growth),color="blue")+theme_bw()+labs(title="Africa GDP Growth per Year (1970-2018)",x="Periods",y="GDP Growth in Percentages")
+ggplotly(p,tooltip=c("Year","growth"))
+
+```
+
+## Africa GDP and GDP Growth Compared to Other Continents'
+```{r}
+## Americas
+am<- read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (1).csv")
+growth_rate <- function(x)(x/lag(x)-1)*100 
+am$growth_rate <- growth_rate(am$Value) 
+am1 <- mutate(am,growth=growth_rate(Value),Value=Value/1000)
+as <-read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (2).csv")
+as1 <- mutate(as,growth=growth_rate(Value),Value=Value/1000)
+eur <- read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (3).csv")
+eur1 <- mutate(eur,growth=growth_rate(Value),Value=Value/1000)
+oc <- read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (4).csv")
+oc1 <- mutate(oc,growth=growth_rate(Value),Value=Value/1000)
+com <- bind_rows(af1,am1,as1,eur1,oc1)
+o<-ggplot(com,aes(x=Year,y=Value,color=Area))+geom_line()+theme_bw()+labs(title="GDP Per Continent (1970-2018)",x="Periods",y="GDP in Thousands (Billions US Dollars)")
+ggplotly(o,tooltip=c("Year","Value","Area"))
+o1<-ggplot(com,aes(x=Year,y=growth,color=Area))+geom_line()+theme_bw()+facet_wrap(~Area)+labs(title="GDP GroWth per Continent",x="Periods",y="GDP Growth in Percentages")
+ggplotly(o1,tooltip=c("Year","growth","Area"))
+```
+
+# Per capita
+```{r}
+af2 <- read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (5).csv")
+ame <-read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (6).csv")
+res <- read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (8).csv")
+af3 <- mutate(af2,growth=growth_rate(Value),Value=Value/1000)
+res1 <- mutate(res,growth=growth_rate(Value),Value=Value/1000)
+ame1 <- mutate(ame,growth=growth_rate(Value),Value=Value/1000)
+com1 <- bind_rows(af3,ame1)
+com2 <- bind_rows(af3,res1)
+n<-ggplot(com1,aes(x=Year,y=Value,color=Area))+geom_line()+theme_bw()+labs(title="GDP per Capita: Africa vs Regions in the American continent",x="Periods",y="GDP per Capita (In thousands of Billions USD)")
+ggplotly(n,tooltip=c("Year","Value","Area"))
+```
+```{r,fig.width=15}
+n1<-ggplot(com1,aes(x=Year,y=growth,color=Area))+geom_line()+theme_bw()+facet_wrap(~Area)+labs(title="GDP per Capita Growth: Africa vs Regions in the American continent",x="Periods",y="Growth of GDP per Capita in Percentages")
+ggplotly(n1,tooltip=c("Year","growth","Area"))
+```
+```{r,fig.width=15}
+l1<-ggplot(com2,aes(x=Year,y=growth,color=Area))+geom_line()+theme_bw()+facet_wrap(~Area)+labs(title="Growth of GDP per Capita: Africa vs the Rest of the World",x="Periods",y="Growth of GDP per Capita")
+ggplotly(l1,tooltip=c("Year","growth","Area"))
+```
+```{r,fig.height=25,fig.width=15}
+ggplot(com2,aes(y=Value,x=as.character(Year)))+geom_bar(data = com2, aes(fill = Area,group=Year,width=.5), position = "dodge",stat="identity")+theme_bw(base_size=10)+theme(legend.position = "top")+facet_grid(rows=vars(Area))+theme(panel.grid.major.x = element_blank() ,panel.grid.major.y = element_line( size=.5, color="black",linetype="dotted" ))+labs(title="GDP per Capita (In Thousands): Africa Vs Other Regions of the World",x="Periods",y="GDP Per Capita (in Thousands)")
+```
+
+```{r,fig.width=20,fig.height=15}
+afreg<-read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (9).csv")
+afreg1 <- mutate(afreg,growth=growth_rate(Value),Value=Value/1000)
+com3 <- bind_rows(afreg1,ame1)
+#s<-ggplot(com3,aes(x=Year,y=Value,color=Area))+geom_line()+theme_bw()+labs(title="GDP #per Capita: African Regions vs Regions on the American Continent")
+ggplot(com3,aes(y=Value,x=as.character(Year)))+geom_bar(data = com3, aes(fill = Area,group=Year,width=.5), position = "dodge",stat="identity")+theme_bw(base_size=15)+theme(legend.position = "top")+facet_grid(rows=vars(Area))+theme(panel.grid.major.x = element_blank() ,panel.grid.major.y = element_line( size=.5, color="black",linetype="dotted" ))+labs(title="GDP per Capita: African Regions vs Regions on the American Continent",x="Periods",y="GPP per Capita in Thousands US Dollars")
+#ggplotly(s,tooltip=c("Year","Value","Area"))
+```
+```{r,fig.width=10}
+s1<-ggplot(com3,aes(x=Year,y=growth,color=Area))+geom_col()+theme_bw()+facet_wrap(~Area)+labs(title="Growth of GDP per Capita in Percentages: African Regions vs Regions on the AAmerican Continent",x="Periods",y="GDP per Capita Growth in Percentages")
+ggplotly(s1,tooltip=c("Year","growth","Area"))
+```
+
+**The graphs above show that even though the Overall African GDP Per capita has been growing at a slower rate when comparedto that of other continents, the Southern and Nothern Region of Africa's GDP per capita has grown at a faster rate than other regions in the Sub-Saharan Region**
+
+```{r}
+pop<-read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (10).csv")
+pop1 <- pop %>% group_by(Year) %>% summarise(Value1=sum(Value))
+wc<-read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (11).csv")
+po<-left_join(wc,pop1,by=c("Year"="Year"))
+po1 <- mutate(po,growth=growth_rate(Value),population_growth=growth_rate(Value1),Value=Value/1000)
+
+j<-ggplot(po1)+geom_line(aes(x=Year,y=Value),color="blue")+theme_bw()+labs(title="World GDP per Capita")
+ggplotly(j,tooltip=c("Year","Value","Area"))
+j1<-ggplot(po1,aes(x=Year,y=population_growth))+geom_line()+theme_bw()+geom_col(aes(y=growth),color="blue")+labs(title="Growth of World GDP per Capita vs Growth of World Population")
+ggplotly(j1,tooltip=c("Year","population_growth","growth"))
+```
+## Annual growth GDP in 2015 prices (Inflation Adjusted)
+
+```{r,fig.width=30,fig.height=10}
+library(directlabels)
+angrowth<-read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (12).csv")
+afrgrowth<-read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (13).csv")
+ggplot(afrgrowth,aes(x=Year,y=Value))+geom_line(aes(y=Value),size=2,color="blue")+theme_bw(base_size=20)+labs(title="Africa GDP Growth in 2015 US Dollars(Inflation Adjusted0")
+#ggplotly(d,tooltip=c("Year","Value"))
+ggplot(angrowth)+geom_line(aes(x=Year,y=Value,color=Area),size=2)+theme_bw(base_size=30)+labs(title="World GDP Growth in 2015 US Dollars (Inflation Adjusted)")
+#ggplotly(b,tooltip=c("Year","Value"))
+```
+```{r,fig.width=10}
+congrowth<-read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (15).csv")
+c<-ggplot(congrowth)+geom_line(aes(x=Year,y=Value,color=Area),size=1)+theme_bw()+labs(title="GDP Growth per Continent in 2015 US Dollars") +geom_text(data = subset(congrowth, Year == "2009"), aes(label = Area, colour = Area, x = Year, y = Value),hjust = -.1) +
+  scale_colour_discrete(guide = 'none')  +    
+  theme(plot.margin = unit(c(1,3,1,1), "lines")) 
+ggplotly(c,tooltip=c("Year","Value","Area"))
+```
+#```{r,fig.height=15,fig.width=15}
+ggplot(congrowth)+geom_path(aes(x=Year,y=Value,color=Area),size=2)+theme_bw(base_size=10)+labs(title="GDP Growth per Continent in 2015 US Dollars")+geom_dl(aes(x=Year,y=Value,label = Area), method = list(dl.combine("first.points", "last.points")), cex = .2) 
+```
+
+
+## What added more to african gdp growth
+```{r,fig.width=10}
+afgdp <- read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (17).csv")
+afgdp1 <- subset(afgdp,Item!="Value Added (Agriculture)"&Item!="Value Added (Manufacture of food and beverages)"&Item!="Value Added (Manufacture of tobacco products)")
+afc<-afgdp1 %>% mutate(Value1=Value/1000)
+h<-ggplot(afc,aes(x=Year,y=Value1,color=Item))+geom_line(aes(y=Value1),size=1)+theme_bw()+labs(title="What Contributed Most to the GDP in Africa?")
+ggplotly(h,tooltip=c("Year","Value","Item"))
+```
+```{r,fig.width=10}
+afgross <- read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (18).csv")
+ggplot(afgross, aes(x=Year,y=Value,color=Item))+geom_line(aes(y=Value),size=2)+theme_bw()+labs(title="What Activities Add More To African GDP")
+afgro <- read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-19-2020 (19).csv")
+ggplot(afgro)+geom_line(aes(x=Year,y=Value,color=Item),size=2)+theme_bw()+labs(title="Other Factors that Contribute to African GDP")
+```
+
+**The African GDP/GDP per Capita, and Real GDP/Real GDP have been growing at a lower rate than that of other continents. From 2002,Agriculture has been the factor that contributed to the growth of the African Economy.**
+
+```{r,fig.width=15,fig.height=10}
+gross <- read.csv("C:/Users/exoni/Downloads/FAOSTAT_data_7-20-2020.csv")
+gross1 <- mutate(gross, Value=Value/1000)
+f<-ggplot(gross1,aes(x=Year,y=Value,color=Item))+geom_line()+facet_wrap(~Area)+theme_bw()+labs(title="What factors are more likely to Increase the GDP than others",x="Periods",y="Value in billions US Dollars")
+ggplotly(f,tooltip=c("Year","Value","Item"))
+```
+
+## Summary and Recommendations
+
+
+**As indicated in the graphs above, the continents whose GDP's are higher are those that excel in the manufacture domain. The African economy has been relying on the Agricultural sector. To see a boost in the GDP and overall African economy, there has to be an emphasis on the manifacturing sector.
+In this study, I only chose to focus on areas that have a significant impact on GDP, Real GDP, and GDP per Capita. Other things held equal, a boost in the manufacture industry is likely to increase the GDP than Agriculture alone can do.**
