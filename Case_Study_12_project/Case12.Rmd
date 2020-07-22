@@ -1,0 +1,123 @@
+---
+title: "Case12"
+author: "Exode"
+date: "7/9/2020"
+output: 
+  html_document:
+    keep_md: true
+    toc: true
+    toc_float: true
+    fig_caption: true
+---
+
+```{r include=FALSE}
+library(sf)
+library(ggplot2)
+library(haven)
+library(foreign)
+library(rgdal)
+library(raster)
+library(stringi)
+library(stringr)
+library(readr)
+library(ggrepel)
+library(USAboundaries)
+library(geofacet)
+library(gganimate)
+library(magick)
+library(plotly)
+library(USAboundaries)
+library(tidyverse)
+library(maps)
+library(pander)
+library(DT)
+library(dplyr)
+library(Lahman)
+library(tidyr)
+library(ggspatial)
+library(leaflet)
+library(sp)
+```
+```{r}
+#r<-(devtools::install_github("hathawayj/buildings",force=TRUE))
+r<-buildings::permits
+
+states<-us_states()
+
+s <- inner_join(r,states,by=c("StateAbbr"="state_abbr"))
+#s%>% extract(geometry, c("Latitude", "Longitude"), "\\(([^,]+), ([^)]+)\\)")
+s3 <- 
+s1 <- s %>%  group_by(StateAbbr,year,variable) %>% summarise(total=sum(value))
+s2 <- subset(s1,variable=="Single Family")
+```
+
+```{r,fig.height=40,fig.width=40}
+ggplot(s2, aes(x=year, y=total,size=total)) +
+  geom_line() +
+  facet_geo(~ StateAbbr,grid = "us_state_grid2") +scale_x_continuous(labels = function(x) paste0("", substr(x, 3, 4))) +
+  
+  labs(y="Single Family Permits",size="",title="Single Family Permits across the USA (1980-2010)")+theme_bw(base_size=20)+theme(axis.text=element_text(size=28),
+        axis.title=element_text(size=32,face="bold"))+theme(strip.text.x = element_text(size = 26, colour = "blue"))+theme(legend.position="top",legend.text = element_text(colour="blue", size=40, 
+                                     face="bold"))
+```
+
+
+
+## Summary
+
+Between 2007 and 2009, the number of single family decreased in all states. That was in partly to the financial crisis that was going on during that time.
+
+```{r}
+states1 <- as_Spatial(states)
+as(st_geometry(states), "Spatial")
+
+
+
+#ams_ll <- spTransform(states1, CRS("+init=epsg:4326"))
+ams_ll <- spTransform(states1, CRS("+proj=longlat +datum=WGS84 +no_defs"))
+leaflet() %>%
+  addProviderTiles("CartoDB.Positron", options= providerTileOptions(opacity = 0.99)) %>%
+  addPolygons(data = ams_ll,
+    stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5
+  ) %>% addTiles()
+#leaflet() %>%
+  #addTiles() %>% addMarkers()
+```
+
+```{r}
+r2<-st_read("C:/Users/exoni/Downloads/Wells-shp")
+r2
+```
+
+```{r}
+k<-st_read("C:/Users/exoni/Downloads/Dams_of_Idaho-shp/Dams_of_Idaho.shp")
+
+k1 <-subset(k,SurfaceAre>50)
+
+```
+```{r}
+"C:/Users/exoni/Downloads/hyd250"
+download.file("https://research.idwr.idaho.gov/gis/Spatial/Hydrography/streams_lakes/c_250k/hyd250.zip", 
+              destfile = "water.zip" , mode='wb')
+unzip("water.zip", exdir = ".")
+r5<-st_read("./hyd250.shp" )
+r6<-as_Spatial(r5)
+r6
+```
+
+```{r}
+
+ID_counties <- USAboundaries::us_counties(states = "ID")
+st_crs(ID_counties)
+id1 <- as_Spatial(ID_counties)
+id1
+r7<-spTransform(r6,CRS("+proj=tmerc +lat_0=42 +lon_0=-114 +k=0.9996 +x_0=2500000 +y_0=1200000 +datum=NAD83 +units=m +no_defs"))
+my_proj <- "+proj=moll +lat_0=45 +lon_0=-115 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+idaho_tr <- spTransform(id1,CRS("+proj=longlat +datum=WGS84 +no_defs"))
+leaflet() %>%
+  addProviderTiles("CartoDB.Positron", options= providerTileOptions(opacity = 0.99)) %>%
+  addPolygons(data = idaho_tr
+    ,stroke = FALSE, fillOpacity = 0.2, smoothFactor = 0.5
+  ) %>% addTiles()
+
+```
