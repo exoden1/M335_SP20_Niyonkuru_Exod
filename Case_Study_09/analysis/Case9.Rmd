@@ -1,0 +1,59 @@
+---
+title: "Case Study9--It's about time"
+author: "Exode"
+date: "6/21/2020"
+output: 
+  html_document:
+    keep_md: true
+---
+```{r include=FALSE}
+library(lubridate)
+library(readr)
+library(tidyverse)
+library(ggiraphExtra)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(magrittr)
+```
+
+```{r}
+c <- read_csv("https://byuistats.github.io/M335/data/sales.csv ")
+c$Time<-with_tz(c$Time,tz="MST")
+c1 <- mutate(c, Time=ymd_hms(Time),Month=month(Time,label=TRUE),Weakday=wday(Time,label=T),hour=hour(Time))
+c1
+c2 <- filter(c1,Name!="Missing"&Month!="04"&Type!="")
+c3<- c2 %>% group_by(Name, Type, hour, Weakday,Month) %>% summarise(Amount=sum(Amount))
+```
+
+## Revenue Per Month and Business Name
+
+```{r}
+p<- ggplot(c3,aes(y=Amount,x=as.factor(Month),col=Name,group=hour))+facet_wrap(~Name)+geom_boxplot()+theme_bw()
+ggplotly(p, tooltip=c("Weakday","Amount"))
+```
+
+
+## Revenue Per Month, Hour, and Business Type
+
+```{r,fig.height=12,fig.width=23}
+p<- ggplot(c3,aes(y=Amount,x=as.factor(hour),col=Name,group=Weakday,size=hour))+facet_wrap(~Name+Month+Type)+geom_boxplot()+theme_bw()
+ggplotly(p, tooltip=c("hour","Amount"))
+```
+
+## Revenue Per Day Per Business
+
+```{r,fig.height=10,fig.width=15}
+p<- ggplot(c3,aes(y=Amount,x=as.factor(Weakday),col=Name,size=hour))+facet_wrap(~Name)+geom_boxplot(aes(hour))+theme_bw()
+ggplotly(p, tooltip=c("hour","Amount"))
+
+```
+
+```{r,fig.height=10,fig.width=15}
+p<- ggplot(c3,aes(y=Amount,x=as.factor(Weakday),col=Name,size=hour))+facet_wrap(~Name)+geom_violin()+theme_bw()
+ggplotly(p, tooltip=c("hour","Amount"))
+```
+
+## Recommendations
+
+Hours of Operation should be between 9 and 12 pm when the business type is Service. When the business type is Food, 11 am, 12pm ,and from 4pm to 7pm should are the best hours of operation.
